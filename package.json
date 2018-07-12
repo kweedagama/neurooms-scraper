@@ -1,0 +1,14 @@
+{
+  "name": "room-scraper",
+  "version": "1.0.0",
+  "description": "scrapes neu building and classroom data",
+  "main": "scraper.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kevin Weedagama",
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer": "^1.5.0"
+  }
+}
