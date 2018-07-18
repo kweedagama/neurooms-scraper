@@ -3,6 +3,16 @@ const puppeteer = require("puppeteer");
 const selectors = require("./selectors");
 const credentials = require("./creds");
 const pageLinks = require("./links");
+var admin = require("firebase-admin");
+
+var serviceAccount = require("./neurooms.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://neurooms.firebaseio.com"
+});
+
+var db = admin.firestore();
 
 /**
  * Logs into the page if the login screen is present and returns true. Will return false
@@ -11,14 +21,12 @@ const pageLinks = require("./links");
  */
 async function tryLogin(page) {
   try {
-    await page.waitForNavigation("domcontentloaded");
-    await page.click(selectors.login);
-    await page.click(selectors.login);
     await page.click(selectors.username);
     await page.keyboard.type(credentials.username);
     await page.click(selectors.password);
     await page.keyboard.type(credentials.password);
-    await page.click(selectors.login_button);
+    await page.click(selectors.loginButton);
+    await page.waitForNavigation();
     return true;
   } catch (e) {
     console.log("Something went wrong or the user is already logged in.");
@@ -40,14 +48,34 @@ async function goToBuildingPage(buildingLink, page) {
     page = await browser.newPage();
   }
   await page.goto(buildingLink);
-  return;
+  let buildingName = await page.$eval(
+    selectors.buildingName,
+    el => el.innerHTML
+  );
+  return await getRoomLinks(page, buildingName);
 }
 
-async function getRoomLinks(page) {
-  let roomHandles = await page.$$(selectors.roomLink);
-  for (var i = 0; i < roomLinks.length; i++) {
-    let link = await roomHandles[i].getProperty("href");
+/**
+ *
+ * @param {*} page
+ */
+async function getRoomLinks(page, buildingName) {
+  let grid = await page.$(selectors.roomGrid);
+  let roomLinks = [];
+  try {
+    roomLinks = await grid.$$eval(selectors.roomLink, nodes =>
+      nodes.map(n => {
+        return {
+          roomName: n.querySelector("span").innerHTML,
+          linkTo: n.href
+        };
+      })
+    );
+  } catch (e) {
+    console.log(e);
   }
+  console.log(roomLinks[0]);
+  return { building: buildingName, links: roomLinks };
 }
 
 (async () => {
@@ -55,12 +83,29 @@ async function getRoomLinks(page) {
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
     await page.goto(pageLinks.loginPageToClassHome);
+    await page.waitForSelector(selectors.loginButton);
     await tryLogin(page);
+    try {
+      await page.waitForNavigation();
+    } catch (e) {
+      console.log(e);
+    }
     let buildingHandles = await page.$$(selectors.buildingLink);
+    let buildings = [];
     for (var i = 0; i < buildingHandles.length; i++) {
       let link = await buildingHandles[i].getProperty("href");
-      goToBuildingPage(link._remoteObject.value, await browser.newPage());
+      buildings.push(
+        await goToBuildingPage(
+          link._remoteObject.value,
+          await browser.newPage()
+        )
+      );
     }
+    fs.writeFile("output/buildings.json", JSON.stringify(buildings), err => {
+      if (err) {
+        console.log(err);
+      }
+    });
     await browser.close();
   } catch (e) {
     console.log(e);
