@@ -124,7 +124,20 @@ async function getRoomData(browser, roomName, roomLink) {
   };
 }
 
-(async () => {
+async function writeToDb(classrooms) {
+  for (var i = 0; i < classrooms.length; i++) {
+    db.collection("classrooms")
+      .add(classrooms[i])
+      .then(function(docRef) {
+        console.log("Document written with ID: ", docRef.id);
+      })
+      .catch(function(error) {
+        console.error("Error adding document: ", error);
+      });
+  }
+}
+
+var scrapeAll = async () => {
   try {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
@@ -170,9 +183,19 @@ async function getRoomData(browser, roomName, roomLink) {
         console.log(err);
       }
     });
+    await writeToDb(classrooms);
     await browser.close();
   } catch (e) {
     console.log(e);
     return;
+  }
+};
+
+(async () => {
+  if (process.env.MODE == "db") {
+    var classrooms = JSON.parse(fs.readFileSync("output/classrooms.json"));
+    await writeToDb(classrooms);
+  } else {
+    scrapeAll();
   }
 })();
