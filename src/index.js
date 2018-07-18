@@ -76,6 +76,7 @@ async function getRoomLinks(page, buildingName) {
     console.log(e);
   }
   console.log(roomLinks[0]);
+  page.close();
   return { building: buildingName, links: roomLinks };
 }
 
@@ -114,6 +115,7 @@ async function getRoomData(browser, roomName, roomLink) {
     images = nodes.map(n => n.src);
     return images;
   });
+  page.close();
   return {
     room: roomName,
     linkTo: roomLink,
@@ -144,13 +146,26 @@ async function getRoomData(browser, roomName, roomLink) {
           await browser.newPage()
         )
       );
-      await getRoomData(
-        browser,
-        buildings[0].links[0].roomName,
-        buildings[0].links[0].linkTo
-      );
     }
     fs.writeFile("output/buildings.json", JSON.stringify(buildings), err => {
+      if (err) {
+        console.log(err);
+      }
+    });
+    let classrooms = [];
+    for (var i = 0; i < buildings.length; i++) {
+      classrooms.push({ building: buildings[i].building, rooms: [] });
+      for (var j = 0; j < buildings[i].links.length; j++) {
+        classrooms[i].rooms.push(
+          await getRoomData(
+            browser,
+            buildings[i].links[j].roomName,
+            buildings[i].links[j].linkTo
+          )
+        );
+      }
+    }
+    fs.writeFile("output/classrooms.json", JSON.stringify(classrooms), err => {
       if (err) {
         console.log(err);
       }
