@@ -2,3 +2,4 @@ node_modules/
 src/creds.js
 src/neurooms.json
 .vscode/
+.env

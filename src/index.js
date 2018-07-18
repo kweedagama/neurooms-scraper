@@ -1,7 +1,7 @@
+require("dotenv").config();
 let fs = require("fs");
 const puppeteer = require("puppeteer");
 const selectors = require("./selectors");
-const credentials = require("./creds");
 const pageLinks = require("./links");
 var admin = require("firebase-admin");
 
@@ -22,9 +22,9 @@ var db = admin.firestore();
 async function tryLogin(page) {
   try {
     await page.click(selectors.username);
-    await page.keyboard.type(credentials.username);
+    await page.keyboard.type(process.env.HUSKY_USER);
     await page.click(selectors.password);
-    await page.keyboard.type(credentials.password);
+    await page.keyboard.type(process.env.HUSKY_PASSWORD);
     await page.click(selectors.loginButton);
     await page.waitForNavigation();
     return true;
@@ -126,7 +126,7 @@ async function getRoomData(browser, roomName, roomLink) {
 
 (async () => {
   try {
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.goto(pageLinks.loginPageToClassHome);
     await page.waitForSelector(selectors.loginButton);
