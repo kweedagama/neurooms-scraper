@@ -6,5 +6,13 @@ module.exports = {
   roomLink: "a.room-link",
   roomName: "a.room-link > span",
   buildingName: ".entry-title",
-  roomGrid: ".room-grid"
+  roomGrid: ".room-grid",
+  roomInfo: "#classroom-info",
+  roomContent: ".room-content",
+  roomCapacity: ".capacity > span",
+  roomType: ".type",
+  roomFormat: ".format",
+  roomTech: ".tech-details > ul > li",
+  roomCarousel: ".carousel",
+  roomImages: ".wprm-classroom-images-shown-images > img"
 };

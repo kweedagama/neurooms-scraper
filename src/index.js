@@ -56,8 +56,9 @@ async function goToBuildingPage(buildingLink, page) {
 }
 
 /**
- *
+ * Scrapes the building page for the room names and the coresponding links.
  * @param {*} page
+ * @returns {Object} containing building name and array of room names and links.
  */
 async function getRoomLinks(page, buildingName) {
   let grid = await page.$(selectors.roomGrid);
@@ -76,6 +77,49 @@ async function getRoomLinks(page, buildingName) {
   }
   console.log(roomLinks[0]);
   return { building: buildingName, links: roomLinks };
+}
+
+/**
+ * Opens new page and scrapes page for room data.
+ * Returns data in format -> name, linkTo, details, imageLinks
+ * @param {Browser} browser
+ * @param {String} roomName
+ * @param {String} roomLink
+ */
+async function getRoomData(browser, roomName, roomLink) {
+  const page = await browser.newPage();
+  await page.goto(roomLink);
+  const content = await page.$(selectors.roomInfo);
+  let details = await content.$eval(
+    selectors.roomContent,
+    (n, selectors) => {
+      var tech = [];
+      n.querySelectorAll(selectors.roomTech).forEach(function(x) {
+        tech.push(x.innerHTML.trim());
+      });
+      return {
+        capacity: n.querySelector(selectors.roomCapacity).innerHTML,
+        type: n.querySelector(selectors.roomType).textContent.trim(),
+        furnitureStyle: n
+          .querySelector(selectors.roomFormat)
+          .textContent.trim(),
+        technology: tech
+      };
+    },
+    selectors
+  );
+  const carousel = await page.$(selectors.roomCarousel);
+  let imgLinks = await carousel.$$eval(selectors.roomImages, nodes => {
+    var images = [];
+    images = nodes.map(n => n.src);
+    return images;
+  });
+  return {
+    room: roomName,
+    linkTo: roomLink,
+    details: details,
+    images: imgLinks
+  };
 }
 
 (async () => {
@@ -99,6 +143,11 @@ async function getRoomLinks(page, buildingName) {
           link._remoteObject.value,
           await browser.newPage()
         )
+      );
+      await getRoomData(
+        browser,
+        buildings[0].links[0].roomName,
+        buildings[0].links[0].linkTo
       );
     }
     fs.writeFile("output/buildings.json", JSON.stringify(buildings), err => {

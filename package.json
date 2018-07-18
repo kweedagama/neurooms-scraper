@@ -2,10 +2,10 @@
   "name": "room-scraper",
   "version": "1.0.0",
   "description": "scrapes neu building and classroom data",
-  "main": "scraper.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/scraper.js"
+    "start": "node src/index.js"
   },
   "author": "Kevin Weedagama",
   "license": "ISC",
