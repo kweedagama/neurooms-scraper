@@ -1,5 +1,4 @@
 var puppeteer = require("puppeteer");
-var fs = require("fs");
 
 /**
  * Sets up the testing environment.

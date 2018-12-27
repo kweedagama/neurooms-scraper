@@ -4,3 +4,4 @@ src/neurooms.json
 src/endpoints.json
 .vscode/
 .env
+output/
