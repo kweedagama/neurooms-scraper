@@ -1,5 +1,6 @@
 node_modules/
 src/creds.js
 src/neurooms.json
+src/endpoints.json
 .vscode/
 .env
