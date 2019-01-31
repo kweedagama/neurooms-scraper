@@ -1,7 +1,7 @@
 require("dotenv").config();
 let fs = require("fs");
-var scraper = require("./scraper");
-var db = require("./db/database");
+let scraper = require("./scraper");
+let db = require("./db/database");
 
 /**
  * Entry point for the program.
@@ -13,7 +13,7 @@ async function main() {
   } else if (process.env.MODE == "format") {
     var classrooms = JSON.parse(fs.readFileSync("output/classrooms.json"));
   } else {
-    scraper.scrapeAll();
+    scraper.scrapeBuildingInfo();
   }
   db._disconnect();
   return;

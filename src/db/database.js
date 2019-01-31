@@ -12,6 +12,9 @@ class Database {
     this._connect();
   }
   _connect() {
+    if(!server || !db) {
+      throw new Error("Mongo server or db not supplied");
+    }
     mongoose
       .connect(`mongodb://${server}/${db}`)
       .then(() => {

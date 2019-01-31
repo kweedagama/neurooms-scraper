@@ -1,7 +1,6 @@
 const puppeteer = require("puppeteer");
 const selectors = require("./selectors");
 const pageLinks = require("./links");
-const app = require("./firebase");
 var Room = require("./models/roomModel");
 var fs = require("fs");
 var roomDb = require("./db/roomDb");
@@ -40,11 +39,12 @@ async function goToBuildingPage(buildingLink, page) {
     page = await browser.newPage();
   }
   await page.goto(buildingLink);
-  let buildingName = await page.$eval(
-    selectors.buildingName,
-    el => el.innerHTML
-  );
+  let buildingName = getBuildingName(page);
   return await getRoomLinks(page, buildingName);
+}
+
+async function getBuildingName(page) {
+  return await page.$eval(selectors.buildingName, el => el.innerHTML);
 }
 
 /**
@@ -104,8 +104,8 @@ async function getRoomData(browser, building, roomName, roomLink) {
   );
   const carousel = await page.$(selectors.roomCarousel);
   let imgLinks = await carousel.$$eval(selectors.roomImages, nodes => {
-    var images = [];
-    for (var i = 0; i < nodes.length; i++) {
+    let images = [];
+    for (let i = 0; i < nodes.length; i++) {
       if (nodes[i].src.indexOf("maps") == -1) {
         images.push(nodes[i].src);
       }
@@ -129,7 +129,7 @@ async function getRoomData(browser, building, roomName, roomLink) {
  * Main function that scrapes the buildings page for classroom links
  * and the classrooms links for room data. Writes all data to ouput folder.
  */
-async function scrapeAll() {
+async function scrapeBuildingInfo() {
   try {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
@@ -183,4 +183,4 @@ async function scrapeAll() {
   }
 }
 
-module.exports = { scrapeAll };
+module.exports = { scrapeBuildingInfo };

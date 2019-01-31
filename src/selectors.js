@@ -14,5 +14,8 @@ module.exports = {
   roomFormat: ".format",
   roomTech: ".tech-details > ul > li",
   roomCarousel: ".carousel",
-  roomImages: ".wprm-classroom-images-shown-images > img"
+  roomImages: ".wprm-classroom-images-shown-images > img",
+  termSelector: "div#s2id_txt_term",
+  springTerm2019: "input#txt_term",
+  termSearch: "button#select2-drop-mask"
 };
